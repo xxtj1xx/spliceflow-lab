@@ -10,6 +10,7 @@ export default function HeuristicPane({ enclosure, job }) {
   if (missingAfter) red.push('After=0')
   if (!cad) red.push('missing DLR')
   if (emptyCounts) red.push('empty counts')
+  if (!enclosure?.publishedMarkup) red.push('published markup missing')
   const packet = []
   if (missingAfter) packet.push('After photos missing — closeout packet incomplete')
   if (!cad) packet.push('No CAD OSP DLR on enclosure')
@@ -17,8 +18,8 @@ export default function HeuristicPane({ enclosure, job }) {
   if (!String(enclosure?.placement || '').trim()) packet.push('Placement unset (will print as — ; not invented)')
   return (
     <div className="card heuristic" data-testid="heuristic-ai">
-      <h3>Heuristic AI (simulated — not a live model)</h3>
-      <p className="muted">Rules on this enclosure record. No live model. No API.</p>
+      <h3>HEURISTIC · not a live model</h3>
+      <p className="muted">Labeled HEURISTIC. Pure functions over enclosure state. No live model.</p>
       <p><strong>Missing After:</strong> {missingAfter ? 'After photos = 0 on this enclosure' : 'After = ' + afterN + ' (gate open)'}</p>
       <p><strong>Packet draft</strong></p>
       {packet.length ? <ul>{packet.map((x) => <li key={x}>{x}</li>)}</ul> : <p>No missing packet items from current fields.</p>}

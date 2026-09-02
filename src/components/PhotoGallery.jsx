@@ -19,7 +19,7 @@ function FileBtn({ label, capture, disabled, onFiles }) {
   )
 }
 
-export default function PhotoGallery({ photos, onChange }) {
+export default function PhotoGallery({ photos, onChange, onSynthetic, onRemove }) {
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState('')
   const before = photos?.before || []
@@ -34,13 +34,7 @@ export default function PhotoGallery({ photos, onChange }) {
       const added = []
       for (const file of list) {
         const dataUrl = await compressImageFile(file)
-        added.push({
-          id: nid(kind),
-          name: file.name,
-          dataUrl,
-          addedAt: new Date().toISOString(),
-          kind,
-        })
+        added.push({ id: nid(kind), name: file.name, dataUrl, addedAt: new Date().toISOString(), kind })
       }
       onChange({ ...photos, [kind]: [...(photos[kind] || []), ...added] })
     } catch (e) {
@@ -49,52 +43,44 @@ export default function PhotoGallery({ photos, onChange }) {
     setBusy(false)
   }
 
-  function remove(kind, id) {
-    onChange({ ...photos, [kind]: (photos[kind] || []).filter((p) => p.id !== id) })
+  function bucket(kind, list) {
+    const isAfter = kind === 'after'
+    return (
+      <div>
+        <strong>{isAfter ? 'After' : 'Before'} ({list.length})</strong>
+        <div className="actions">
+          <FileBtn label={isAfter ? 'Capture After (camera)' : 'Capture Before (camera)'} capture="environment" disabled={busy} onFiles={(f) => addFiles(kind, f)} />
+          <FileBtn label={isAfter ? 'Add After from gallery' : 'Add Before from gallery'} disabled={busy} onFiles={(f) => addFiles(kind, f)} />
+          {onSynthetic && (
+            <button type="button" className="secondary" onClick={() => onSynthetic(kind)}>
+              Add synthetic {kind}
+            </button>
+          )}
+        </div>
+        {isAfter && list.length === 0 && <div className="gate">After = 0 — camera and gallery both count</div>}
+        <div className="gallery">
+          {list.map((p) => (
+            <div key={p.id} className="ph">
+              <img src={p.dataUrl} alt={p.name || kind} />
+              <div className="cap">{kind}</div>
+              {onRemove && (
+                <button type="button" className="secondary" onClick={() => onRemove(kind, p.id)}>x</button>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    )
   }
 
   return (
     <div className="card">
       <h2>Photos on this enclosure</h2>
-      <p className="muted">
-        Camera capture and gallery/file picker both count. After-0 blocks Save/Submit on this enclosure.
-      </p>
+      <p className="muted">Camera capture and gallery/file picker both count. After-0 blocks Save/Submit on this enclosure.</p>
       {err && <p className="gate">{err}</p>}
       <div className="grid two">
-        <div>
-          <strong>Before ({before.length})</strong>
-          <div className="actions">
-            <FileBtn label="Capture Before (camera)" capture="environment" disabled={busy} onFiles={(f) => addFiles('before', f)} />
-            <FileBtn label="Add Before from gallery" disabled={busy} onFiles={(f) => addFiles('before', f)} />
-          </div>
-          <div className="gallery">
-            {before.length === 0 && <div className="ph"><div className="cap">none</div></div>}
-            {before.map((p) => (
-              <div className="ph" key={p.id}>
-                <img src={p.dataUrl} alt={p.name || 'before'} />
-                <div className="cap">before</div>
-                <button type="button" className="secondary" onClick={() => remove('before', p.id)}>x</button>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div>
-          <strong>After ({after.length})</strong>
-          <div className="actions">
-            <FileBtn label="Capture After (camera)" capture="environment" disabled={busy} onFiles={(f) => addFiles('after', f)} />
-            <FileBtn label="Add After from gallery" disabled={busy} onFiles={(f) => addFiles('after', f)} />
-          </div>
-          {after.length === 0 && <div className="gate">After = 0 — gallery and camera both count</div>}
-          <div className="gallery">
-            {after.map((p) => (
-              <div className="ph" key={p.id}>
-                <img src={p.dataUrl} alt={p.name || 'after'} />
-                <div className="cap">after</div>
-                <button type="button" className="secondary" onClick={() => remove('after', p.id)}>x</button>
-              </div>
-            ))}
-          </div>
-        </div>
+        {bucket('before', before)}
+        {bucket('after', after)}
       </div>
     </div>
   )

@@ -8,7 +8,7 @@ import HeuristicPane from './HeuristicPane.jsx'
 
 export default function ReviewView({ mode }) {
   const { id } = useParams()
-  const { enclosure, job, updateEnclosure } = useStore()
+  const { enclosure, job, updateEnclosure, officeApprove } = useStore()
   const enc = enclosure(id)
   const [notes, setNotes] = useState('')
   const [saved, setSaved] = useState('')
@@ -105,6 +105,20 @@ export default function ReviewView({ mode }) {
       <div className="card" style={{ marginBottom: 14 }}>
         <CadSlot job={job} enclosure={enc} readOnly onSaveMarkups={() => {}} />
       </div>
+
+      {after.length === 0 && (
+        <div className="card" style={{ marginBottom: 14 }}>
+          <p className="gate">office-approve · photo missing — After = 0 on this enclosure.</p>
+          <button type="button" onClick={() => officeApprove(enc.id)}>Office-approve (photo missing allowed)</button>
+          {enc.qc?.officeApproved && <p className="ok-box">{enc.qc.reason}</p>}
+        </div>
+      )}
+      {after.length >= 1 && (
+        <div className="actions" style={{ marginBottom: 14 }}>
+          <button type="button" className="secondary" onClick={() => officeApprove(enc.id)}>Office-approve this enclosure</button>
+          {enc.qc?.officeApproved && <span className="chip ok">{enc.qc.reason}</span>}
+        </div>
+      )}
 
       <div className="card">
         <h2>{isNoc ? 'NOC notes' : 'Engineer notes'}</h2>

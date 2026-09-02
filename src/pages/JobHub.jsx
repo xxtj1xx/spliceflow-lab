@@ -6,7 +6,7 @@ import { ENC_ID } from '../seed.js'
 import { cadPresent, jobDlr } from '../lib.js'
 
 export default function JobHub() {
-  const { job, enclosure, removeJobDlr, restoreJobDlr } = useStore()
+  const { job, enclosure, removeJobDlr, restoreJobDlr, hydrateNow } = useStore()
   const enc = enclosure(ENC_ID)
   const dlr = jobDlr(job)
   const afterN = enc?.photos?.after?.length || 0
@@ -34,7 +34,7 @@ export default function JobHub() {
                 </Link>
               </p>
               <p className="muted">
-                {enc.caseType} · {enc.placement} · spans {enc.spanCount} · fibers {enc.fibersSpliced}
+                {enc.caseType} · remaining {enc.remainingFt ?? "—"} ft · fibers {enc.counts?.plannedFibers ?? enc.fibersSpliced}
               </p>
               <p>
                 After photos: {afterN}{' '}
@@ -42,6 +42,7 @@ export default function JobHub() {
               </p>
               <p>CAD OSP DLR: {cad ? 'hydrated from job DLR' : 'missing DLR'}</p>
               <div className="actions">
+                <button type="button" className="secondary" onClick={() => hydrateNow(enc.id)}>Hydrate CAD from job DLR</button>
                 <Link className="btn" to={'/enclosure/' + enc.id}>
                   Open enclosure
                 </Link>
@@ -89,14 +90,13 @@ export default function JobHub() {
         </div>
       </div>
 
-      <div className="card" style={{ marginTop: 14 }}>
+      <div className="card stub-card" style={{ marginTop: 14 }}>
         <div className="row">
-          <h2 style={{ margin: 0 }}>KEEP — Lab only</h2>
-          <span className="chip">KEEP</span>
+          <h2 style={{ margin: 0 }}>Clad slice — pending public list</h2>
+          <span className="chip stub">STUB</span>
         </div>
         <p>
-          Clad, Procore, Render, IQGeo, Sitetracker, VETRO. Patterns stolen onto this enclosure, not clones.
-          Open KEEP for the raid. No invoices, 811, Gantt, or OSS. Not claimed as production.
+          Clad public best-feature list is still being researched. This Lab panel is an honest placeholder. Nothing here is a Clad capability.
         </p>
       </div>
     </div>

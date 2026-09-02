@@ -437,3 +437,15 @@ button.on {
   .page { width: calc(100% - 16px); }
   .packet .k { grid-template-columns: 1fr; }
 }
+
+.task-seq { margin: 0; padding-left: 1.2rem; }
+.task-seq li { margin: 6px 0; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.lab-panel ul { margin: 8px 0 0; padding-left: 1.1rem; }
+.lab-panel li { margin: 4px 0; }
+.mock-qr { background: #f8f4e8; padding: 8px; display: inline-block; border: 2px solid #0a1628; }
+.chip.warn { background: var(--red-bg); color: var(--red); }
+.chip.ok { background: var(--ok-bg); color: var(--ok); }
+.role-switch { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+.role-switch select { background: var(--navy); border: 1px solid var(--line); color: var(--text); padding: 4px 8px; }
+.hist { font-family: var(--mono); font-size: 12px; color: var(--muted); max-height: 180px; overflow: auto; }
+textarea { width: 100%; min-height: 72px; background: var(--navy); border: 1px solid var(--navy-4); padding: 8px; }

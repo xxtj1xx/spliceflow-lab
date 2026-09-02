@@ -6,8 +6,8 @@ import { SEEDED_LOGINS } from '../seed.js'
 
 export default function Login() {
   const { session, login } = useStore()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [email, setEmail] = useState('lab@spliceflow.test')
+  const [password, setPassword] = useState('lab-tester')
   const [err, setErr] = useState('')
   const [params] = useSearchParams()
   const next = params.get('next')

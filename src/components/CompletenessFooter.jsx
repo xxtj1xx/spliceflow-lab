@@ -18,9 +18,10 @@ export default function CompletenessFooter({ enclosure, job }) {
         <li className={cad ? 'good' : 'bad'}>CAD OSP DLR: {cad ? 'present (hydrated from job DLR)' : 'missing DLR'}</li>
         <li>Before photos: {beforeN} (optional)</li>
         <li>Markups: {enclosure.markups?.length || 0}</li>
+        <li>Remaining footage: {enclosure.remainingFt ?? "—"} ft</li>
       </ul>
       {!requiredOk && (
-        <p className="gate">Required items are not complete. After-0 blocks Save and Submit on this enclosure.</p>
+        <p className="gate">QUALITY GATE · After = 0. Required items are not complete. Save and Submit blocked.</p>
       )}
       {requiredOk && <p className="ok-box">Required After photo is present. Save is enabled.</p>}
     </footer>

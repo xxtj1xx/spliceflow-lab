@@ -7,7 +7,7 @@ import { ENC_ID, JOB_ID } from '../seed.js'
 export default function AdminInvites() {
   const { users, mintInvite, resetSeed } = useStore()
   const [email, setEmail] = useState('crew2@lab.local')
-  const [role, setRole] = useState('contractor')
+  const [role, setRole] = useState('tech')
   const [once, setOnce] = useState(null)
   const [err, setErr] = useState('')
 
@@ -45,7 +45,8 @@ export default function AdminInvites() {
         <label className="field">
           Role
           <select value={role} onChange={(e) => setRole(e.target.value)}>
-            <option value="contractor">contractor</option>
+            <option value="tech">tech</option>
+            <option value="pm">pm</option>
             <option value="engineer">engineer</option>
             <option value="noc">noc</option>
             <option value="admin">admin</option>

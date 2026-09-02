@@ -2,7 +2,7 @@ import React from 'react'
 import MarkupCanvas from './MarkupCanvas.jsx'
 import { jobDlr } from '../lib.js'
 
-export default function CadSlot({ job, enclosure, onSaveMarkups, readOnly }) {
+export default function CadSlot({ job, enclosure, onSaveMarkups, onPublish, readOnly }) {
   const dlr = jobDlr(job)
   const missing = !dlr
   const hydrated = !!enclosure.cadSlot && !missing
@@ -31,6 +31,11 @@ export default function CadSlot({ job, enclosure, onSaveMarkups, readOnly }) {
         readOnly={readOnly || missing}
         disabled={missing}
       />
+      {!readOnly && onPublish && (
+        <div className="actions" style={{ marginTop: 8 }}>
+          <button type="button" onClick={onPublish}>Publish markup to enclosure record</button>
+        </div>
+      )}
     </section>
   )
 }
