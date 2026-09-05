@@ -1,64 +1,33 @@
-import React from 'react'
-import { Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom'
-import { useStore } from './store.jsx'
-import LabBanner from './components/LabBanner.jsx'
-import OfflineBanner from './components/OfflineBanner.jsx'
-import Header from './components/Header.jsx'
-import Login from './pages/Login.jsx'
-import JobHub from './pages/JobHub.jsx'
-import Enclosure from './pages/Enclosure.jsx'
-import Engineer from './pages/Engineer.jsx'
-import Noc from './pages/Noc.jsx'
-import Closeout from './pages/Closeout.jsx'
-import AdminInvites from './pages/AdminInvites.jsx'
-import QrLanding from './pages/QrLanding.jsx'
-import Offline from './pages/Offline.jsx'
-import Clad from './pages/Clad.jsx'
+import { Navigate, Route, Routes } from "react-router-dom"
+import { useStore } from "./store"
+import { Login, TechHome, Enclosure } from "./screens1"
+import { QR } from "./screen-qr"
+import { PM } from "./screen-pm"
+import { Engineer } from "./screen-eng"
+import { NOC } from "./screen-noc"
+import { Closeout } from "./screen-close"
+import { Invite } from "./screen-inv"
 
-function RequireAuth() {
-  const { session } = useStore()
-  const loc = useLocation()
-  if (!session) {
-    const next = loc.pathname + loc.search
-    return <Navigate to={'/login?next=' + encodeURIComponent(next)} replace />
-  }
-  return (
-    <>
-      <Header />
-      <Outlet />
-    </>
-  )
-}
-
-function AdminOnly() {
-  const { session } = useStore()
-  if (session?.role !== 'admin') return <Navigate to="/" replace />
-  return <Outlet />
+function Guard({ children }) {
+  const { state } = useStore()
+  if (!state.session.authed) return <Navigate to="/" replace />
+  return children
 }
 
 export default function App() {
   return (
-    <div className="app">
-      <LabBanner />
-      <OfflineBanner />
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/offline" element={<Offline />} />
-        <Route element={<RequireAuth />}>
-          <Route path="/" element={<JobHub />} />
-          <Route path="/enclosure/:id" element={<Enclosure />} />
-          <Route path="/enclosure/:id/engineer" element={<Engineer />} />
-          <Route path="/enclosure/:id/noc" element={<Noc />} />
-          <Route path="/closeout/:id" element={<Closeout />} />
-          <Route path="/qr/:id" element={<QrLanding />} />
-          <Route path="/e/:id" element={<QrLanding />} />
-          <Route path="/clad" element={<Clad />} />
-          <Route element={<AdminOnly />}>
-            <Route path="/admin/invites" element={<AdminInvites />} />
-          </Route>
-        </Route>
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </div>
+    <Routes>
+      <Route path="/" element={<Login />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/app" element={<Guard><TechHome /></Guard>} />
+      <Route path="/app/enclosure/:id" element={<Guard><Enclosure /></Guard>} />
+      <Route path="/app/qr" element={<Guard><QR /></Guard>} />
+      <Route path="/app/pm" element={<Guard><PM /></Guard>} />
+      <Route path="/app/engineer" element={<Guard><Engineer /></Guard>} />
+      <Route path="/app/noc" element={<Guard><NOC /></Guard>} />
+      <Route path="/app/closeout/:id" element={<Guard><Closeout /></Guard>} />
+      <Route path="/app/invite" element={<Guard><Invite /></Guard>} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   )
 }
