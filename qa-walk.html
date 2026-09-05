@@ -1,0 +1,103 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>lab walk</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #0c1a2e; overflow: hidden; }
+  iframe { border: 0; width: 100%; height: 100%; }
+  #status { position: fixed; bottom: 0; left: 0; right: 0; z-index: 9;
+    background: #111; color: #f5b942; font: 12px/1.4 ui-monospace, monospace;
+    padding: 6px 10px; white-space: pre-wrap; max-height: 22vh; overflow: auto; }
+</style>
+<iframe id="f" src="about:blank"></iframe>
+<pre id="status">starting</pre>
+<script>
+const statusEl = document.getElementById("status")
+const f = document.getElementById("f")
+function log(m) {
+  statusEl.textContent = m
+  fetch("http://127.0.0.1:5188/log", { method: "POST", headers: { "content-type": "text/plain" }, body: String(Date.now()) + " " + m }).catch(() => {})
+}
+function sleep(ms) { return new Promise((r) => setTimeout(r, ms)) }
+function doc() { return f.contentDocument }
+function win() { return f.contentWindow }
+function fill(el, value) {
+  const desc = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")
+  desc.set.call(el, value)
+  el.dispatchEvent(new Event("input", { bubbles: true }))
+  el.dispatchEvent(new Event("change", { bubbles: true }))
+}
+function waitFor(fn, timeout) {
+  const t0 = Date.now()
+  return new Promise((resolve, reject) => {
+    const tick = () => {
+      try { if (fn()) return resolve(true) } catch (e) {}
+      if (Date.now() - t0 > timeout) return reject(new Error("timeout"))
+      setTimeout(tick, 100)
+    }
+    tick()
+  })
+}
+function histText() {
+  const h = doc().querySelector(".hist")
+  return h ? h.innerText : "(no .hist)"
+}
+async function go() {
+  const bust = Date.now()
+  log("PHASE load / hard-refresh JS")
+  f.src = "/?cb=" + bust
+  await waitFor(() => {
+    const d = doc()
+    return d && (d.querySelector("input[type=password]") || /Jobs to enclosures|Vault 12/.test(d.body && d.body.innerText || ""))
+  }, 15000)
+  await sleep(400)
+
+  const already = /Jobs to enclosures|Vault 12/.test(doc().body.innerText)
+  if (!already) {
+    log("PHASE login")
+    const inputs = [...doc().querySelectorAll("input")]
+    const pass = doc().querySelector("input[type=password]") || inputs[1]
+    fill(pass, "lab-tech")
+    const btn = [...doc().querySelectorAll("button")].find((b) => /Enter lab/i.test(b.textContent))
+    if (!btn) throw new Error("no Enter lab")
+    btn.click()
+    await waitFor(() => /Jobs to enclosures|Vault 12/.test(doc().body.innerText || ""), 15000)
+  }
+
+  log("PHASE open Vault 12")
+  const link = [...doc().querySelectorAll("a")].find((a) => /Vault 12/.test(a.textContent) && /LAB-ENC-02/.test(a.textContent + a.getAttribute("href")))
+    || [...doc().querySelectorAll("a")].find((a) => /Vault 12/.test(a.textContent))
+    || [...doc().querySelectorAll("a")].find((a) => (a.getAttribute("href") || "").includes("LAB-ENC-02"))
+  if (!link) throw new Error("no Vault 12 link")
+  link.click()
+  await waitFor(() => /History/.test(doc().body.innerText || "") && /Mark doc/.test(doc().body.innerText || ""), 15000)
+  const histCard = [...doc().querySelectorAll("h3")].find((h) => h.textContent.trim() === "History")
+  if (histCard) histCard.scrollIntoView({ block: "center" })
+  await sleep(500)
+  log("BEFORE_HISTORY\n" + histText() + "\nPHASE=BEFORE_READY")
+  await sleep(8000)
+
+  log("PHASE click Mark doc twice, notes empty")
+  const noteInput = [...doc().querySelectorAll("input")].find((el) => el.parentElement && /Notes \+ docs markup/.test(el.parentElement.textContent || ""))
+  if (noteInput && noteInput.value) fill(noteInput, "")
+  const mark = [...doc().querySelectorAll("button")].find((b) => b.textContent.trim() === "Mark doc")
+  if (!mark) throw new Error("no Mark doc button")
+  mark.click()
+  await sleep(200)
+  mark.click()
+  await sleep(400)
+  if (histCard) histCard.scrollIntoView({ block: "center" })
+  log("AFTER_HISTORY\n" + histText() + "\nPHASE=AFTER_READY")
+  await sleep(8000)
+
+  log("PHASE hard refresh enclosure")
+  win().location.reload()
+  await waitFor(() => /History/.test(doc().body && doc().body.innerText || ""), 15000)
+  await sleep(600)
+  const histCard2 = [...doc().querySelectorAll("h3")].find((h) => h.textContent.trim() === "History")
+  if (histCard2) histCard2.scrollIntoView({ block: "center" })
+  log("REFRESH_HISTORY\n" + histText() + "\nPHASE=REFRESH_READY")
+  await sleep(10000)
+  log("DONE\n" + histText())
+}
+go().catch((e) => log("ERROR " + (e && e.stack || e)))
+</script>
